@@ -10,6 +10,12 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.kotest.property.arbitrary.Codepoint
+import io.kotest.property.arbitrary.az
+import io.kotest.property.arbitrary.string
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.property.checkAll as kotestCheckAll
+import io.kotest.property.Arb
 
 class BookUseCaseTest : StringSpec({
 
@@ -54,5 +60,38 @@ class BookUseCaseTest : StringSpec({
             Book("Clean Code", "Robert Martin"),
             Book("TDD by Example", "Kent Beck")
         )
+    }
+    // Property-based tests
+    "property: all saved books are returned" {
+        val fakeRepository = FakeBookRepository()
+        val fakeUseCase = BookUseCase(fakeRepository)
+
+        kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
+            fakeUseCase.addBook(title, author)
+        }
+
+        fakeRepository.findAll().size shouldBe fakeUseCase.getAllBooks().size
+    }
+
+    "property: getAllBooks is always sorted alphabetically" {
+        val fakeRepository = FakeBookRepository()
+        val fakeUseCase = BookUseCase(fakeRepository)
+
+        kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
+            fakeUseCase.addBook(title, author)
+        }
+
+        val result = fakeUseCase.getAllBooks()
+        result shouldBe result.sortedBy { it.title }
+    }
+
+    "property: added book is always in the returned list" {
+        val fakeRepository = FakeBookRepository()
+        val fakeUseCase = BookUseCase(fakeRepository)
+
+        kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
+            fakeUseCase.addBook(title, author)
+            fakeUseCase.getAllBooks().map { it.title } shouldContain title
+        }
     }
 })
