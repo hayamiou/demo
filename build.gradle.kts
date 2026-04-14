@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.5.13"
 	id("io.spring.dependency-management") version "1.1.7"
+	jacoco
 }
 
 group = "com.example"
@@ -38,4 +39,20 @@ kotlin {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+jacoco {
+	toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport)
 }
