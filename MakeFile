@@ -1,0 +1,15 @@
+.PHONY: build test clean push
+
+build:
+	./gradlew build
+
+test:
+	./gradlew test
+
+clean:
+	./gradlew clean
+
+push:
+	git add .
+	git commit -m "$(msg)"
+	git push
