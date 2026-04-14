@@ -1,13 +1,13 @@
 .PHONY: build test clean push
 
 build:
-	./gradlew build
+	.\gradlew.bat build
 
 test:
-	./gradlew test
+	.\gradlew.bat test
 
 clean:
-	./gradlew clean
+	.\gradlew.bat clean
 
 push:
 	git add .
