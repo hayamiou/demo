@@ -33,6 +33,9 @@ jobs:
       - name: Run tests
         run: ./gradlew test
 
+      - name: Run integration tests
+        run: ./gradlew testIntegration
+
       - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()
