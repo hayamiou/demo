@@ -83,7 +83,7 @@ dependencies {
 	}
 }
 
-// ← jacoco et références à testIntegration APRÈS
+
 jacoco {
 	toolVersion = "0.8.11"
 }
