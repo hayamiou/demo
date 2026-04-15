@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "3.5.13"
 	id("io.spring.dependency-management") version "1.1.7"
 	jacoco
+	id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = "com.example"
@@ -28,7 +29,7 @@ dependencies {
 	testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 	testImplementation("io.kotest:kotest-property:5.9.1")
 	testImplementation("io.mockk:mockk:1.13.10")
-	testImplementation("io.mockk:mockk:1.13.10")
+	testImplementation("io.kotest.extensions:kotest-extensions-pitest:1.2.0")
 }
 
 kotlin {
@@ -55,4 +56,14 @@ tasks.jacocoTestReport {
 
 tasks.test {
 	finalizedBy(tasks.jacocoTestReport)
+}
+
+pitest {
+	junit5PluginVersion = "1.2.1"
+	targetClasses = setOf("com.example.demo.domain.*")
+	targetTests = setOf("com.example.demo.*", "com.example.demo.domain.*")
+	outputFormats = setOf("HTML", "XML")
+	timestampedReports = false
+	useClasspathFile = true
+	pitestVersion = "1.15.3"
 }
