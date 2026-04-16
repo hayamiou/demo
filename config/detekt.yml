@@ -1,0 +1,41 @@
+complexity:
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 8
+
+style:
+  MagicNumber:
+    active: false
+  WildcardImport:
+    active: true
+  NewLineAtEndOfFile:
+    active: false
+  MaxLineLength:
+    active: false
+
+naming:
+  FunctionNaming:
+    active: true
+
+formatting:
+  FinalNewline:
+    active: false
+  Indentation:
+    active: false
+  NoConsecutiveBlankLines:
+    active: false
+  ArgumentListWrapping:
+    active: false
+  Wrapping:
+    active: false
+  MaximumLineLength:
+    active: false
+
+performance:
+  SpreadOperator:
+    active: false
+
+empty-blocks:
+  EmptyFunctionBlock:
+    active: false
