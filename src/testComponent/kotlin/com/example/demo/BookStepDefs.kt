@@ -1,7 +1,6 @@
 package com.example.demo
 
 import io.cucumber.java.Before
-import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -37,11 +36,6 @@ class BookStepDefs(
             .post("/books")
             .then()
             .statusCode(201)
-    }
-
-    @And("the user creates the book with title {string} and author {string}")
-    fun createBookAnd(title: String, author: String) {
-        createBook(title, author)
     }
 
     @When("the user gets all books")
