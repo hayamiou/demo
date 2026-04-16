@@ -87,6 +87,7 @@ dependencies {
 	testIntegrationImplementation("org.testcontainers:postgresql:1.19.1")
 	testIntegrationImplementation("org.testcontainers:testcontainers:1.19.1")
 	testIntegrationImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
+	testIntegrationImplementation("org.testcontainers:junit-jupiter:1.19.1")
 }
 
 jacoco {
