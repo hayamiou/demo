@@ -21,16 +21,15 @@ class BookUseCaseTest : StringSpec({
 
     val repository = mockk<BookRepository>()
     val useCase = BookUseCase(repository)
+    val fakeRepository = FakeBookRepository()
+    val fakeUseCase = BookUseCase(fakeRepository)
 
-    // Tests classiques
-    "addBook should return the created book" {
+    "addBook should save the book" {
         every { repository.save(any()) } returns Unit
 
-        val book = useCase.addBook("Clean Code", "Robert Martin")
+        useCase.addBook("Clean Code", "Robert Martin")
 
-        book.title shouldBe "Clean Code"
-        book.author shouldBe "Robert Martin"
-        verify(exactly = 1) { repository.save(book) }
+        verify(exactly = 1) { repository.save(Book(title = "Clean Code", author = "Robert Martin")) }
     }
 
     "addBook with blank title should throw IllegalArgumentException" {
@@ -47,25 +46,22 @@ class BookUseCaseTest : StringSpec({
 
     "getAllBooks should return books sorted alphabetically by title" {
         val books = listOf(
-            Book("Clean Code", "Robert Martin"),
-            Book("Architecture Hexagonale", "Alistair Cockburn"),
-            Book("TDD by Example", "Kent Beck")
+            Book(title = "Clean Code", author = "Robert Martin"),
+            Book(title = "Architecture Hexagonale", author = "Alistair Cockburn"),
+            Book(title = "TDD by Example", author = "Kent Beck")
         )
         every { repository.findAll() } returns books
 
         val result = useCase.getAllBooks()
 
         result shouldContainExactly listOf(
-            Book("Architecture Hexagonale", "Alistair Cockburn"),
-            Book("Clean Code", "Robert Martin"),
-            Book("TDD by Example", "Kent Beck")
+            Book(title = "Architecture Hexagonale", author = "Alistair Cockburn"),
+            Book(title = "Clean Code", author = "Robert Martin"),
+            Book(title = "TDD by Example", author = "Kent Beck")
         )
     }
-    // Property-based tests
-    "property: all saved books are returned" {
-        val fakeRepository = FakeBookRepository()
-        val fakeUseCase = BookUseCase(fakeRepository)
 
+    "property: all saved books are returned" {
         kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
             fakeUseCase.addBook(title, author)
         }
@@ -74,9 +70,6 @@ class BookUseCaseTest : StringSpec({
     }
 
     "property: getAllBooks is always sorted alphabetically" {
-        val fakeRepository = FakeBookRepository()
-        val fakeUseCase = BookUseCase(fakeRepository)
-
         kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
             fakeUseCase.addBook(title, author)
         }
@@ -86,12 +79,40 @@ class BookUseCaseTest : StringSpec({
     }
 
     "property: added book is always in the returned list" {
-        val fakeRepository = FakeBookRepository()
-        val fakeUseCase = BookUseCase(fakeRepository)
-
         kotestCheckAll(Arb.string(1..20, Codepoint.az()), Arb.string(1..20, Codepoint.az())) { title, author ->
             fakeUseCase.addBook(title, author)
             fakeUseCase.getAllBooks().map { it.title } shouldContain title
         }
+    }
+
+    "reserveBook should reserve an available book" {
+        val localRepo = FakeBookRepository()
+        val localUseCase = BookUseCase(localRepo)
+        localRepo.save(Book(title = "Clean Code", author = "Robert Martin"))
+        val savedBook = localRepo.findAll().first()
+
+        localUseCase.reserveBook(savedBook.id!!)
+
+        localRepo.findById(savedBook.id!!)!!.reserved shouldBe true
+    }
+
+    "reserveBook should throw when book is already reserved" {
+        val localRepo = FakeBookRepository()
+        val localUseCase = BookUseCase(localRepo)
+        localRepo.save(Book(title = "Clean Code", author = "Robert Martin", reserved = true))
+        val savedBook = localRepo.findAll().first()
+
+        shouldThrow<IllegalArgumentException> {
+            localUseCase.reserveBook(savedBook.id!!)
+        }.message shouldBe "Book is already reserved"
+    }
+
+    "reserveBook should throw when book does not exist" {
+        val localRepo = FakeBookRepository()
+        val localUseCase = BookUseCase(localRepo)
+
+        shouldThrow<IllegalArgumentException> {
+            localUseCase.reserveBook(999L)
+        }.message shouldBe "Book not found"
     }
 })
