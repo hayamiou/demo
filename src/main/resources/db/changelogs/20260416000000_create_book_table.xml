@@ -9,6 +9,9 @@
             </not>
         </preConditions>
         <createTable tableName="book">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
             <column name="title" type="varchar">
                 <constraints nullable="false"/>
             </column>

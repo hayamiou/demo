@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
 
 @WebMvcTest(BookController::class, GlobalExceptionHandler::class)
@@ -26,8 +27,8 @@ class BookControllerIT(val mockMvc: MockMvc) : FunSpec() {
     init {
         test("GET /books should return list of books sorted alphabetically") {
             every { bookUseCase.getAllBooks() } returns listOf(
-                Book("Clean Code", "Robert Martin"),
-                Book("TDD by Example", "Kent Beck")
+                Book(id = 1L, title = "Clean Code", author = "Robert Martin"),
+                Book(id = 2L, title = "TDD by Example", author = "Kent Beck")
             )
 
             mockMvc.get("/books")
@@ -37,8 +38,8 @@ class BookControllerIT(val mockMvc: MockMvc) : FunSpec() {
                     content {
                         json("""
                             [
-                                {"title": "Clean Code", "author": "Robert Martin"},
-                                {"title": "TDD by Example", "author": "Kent Beck"}
+                                {"id": 1, "title": "Clean Code", "author": "Robert Martin", "reserved": false},
+                                {"id": 2, "title": "TDD by Example", "author": "Kent Beck", "reserved": false}
                             ]
                         """.trimIndent())
                     }
@@ -48,7 +49,7 @@ class BookControllerIT(val mockMvc: MockMvc) : FunSpec() {
         }
 
         test("POST /books should create a book and return 201") {
-            every { bookUseCase.addBook(any(), any()) } returns Book("Clean Code", "Robert Martin")
+            every { bookUseCase.addBook(any(), any()) } returns Unit
 
             mockMvc.post("/books") {
                 contentType = MediaType.APPLICATION_JSON
@@ -80,6 +81,26 @@ class BookControllerIT(val mockMvc: MockMvc) : FunSpec() {
             }.andExpect {
                 status { isBadRequest() }
             }
+        }
+
+        test("PATCH /books/{id}/reserve should return 204") {
+            every { bookUseCase.reserveBook(1L) } returns Unit
+
+            mockMvc.patch("/books/1/reserve")
+                .andExpect {
+                    status { isNoContent() }
+                }
+
+            verify(exactly = 1) { bookUseCase.reserveBook(1L) }
+        }
+
+        test("PATCH /books/{id}/reserve should return 400 when book is already reserved") {
+            every { bookUseCase.reserveBook(1L) } throws IllegalArgumentException("Book is already reserved")
+
+            mockMvc.patch("/books/1/reserve")
+                .andExpect {
+                    status { isBadRequest() }
+                }
         }
     }
 }
